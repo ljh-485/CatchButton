@@ -36,12 +36,13 @@
             RunButton.BackColor = Color.LightBlue;
             RunButton.Font = new Font("맑은 고딕", 19.875F, FontStyle.Bold, GraphicsUnit.Point, 129);
             RunButton.ForeColor = Color.RoyalBlue;
-            RunButton.Location = new Point(715, 190);
+            RunButton.Location = new Point(716, 194);
             RunButton.Name = "RunButton";
             RunButton.Size = new Size(359, 155);
             RunButton.TabIndex = 0;
             RunButton.Text = "나를 잡아봐";
             RunButton.UseVisualStyleBackColor = false;
+            RunButton.Click += RunButton_Click;
             RunButton.MouseClick += RunButton_MouseClick;
             RunButton.MouseEnter += RunButton_MouseEnter;
             // 

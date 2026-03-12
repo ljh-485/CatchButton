@@ -12,7 +12,8 @@ namespace CatchButton
         // 버튼을 잡았을 때
         private void RunButton_MouseClick(object sender, MouseEventArgs e)
         {
-            SystemSounds.Beep.Play();   // 잡았을 때
+            SystemSounds.Beep.Play(); // 기존 소리
+            MessageBox.Show("축하합니다~!", "성공", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void RunButton_MouseEnter(object sender, EventArgs e)
@@ -36,6 +37,11 @@ namespace CatchButton
 
             // 5. 시각적피드백(폼제목표시줄에좌표출력)
             this.Text = $"버튼위치: ({nextX}, {nextY})";
+        }
+
+        private void RunButton_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
