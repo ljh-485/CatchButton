@@ -1,5 +1,6 @@
 using System.Media;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace CatchButton
 {
@@ -17,6 +18,7 @@ namespace CatchButton
         // 놓친 횟수
         private int missCount = 0;
         private const int maxMisses = 30;
+        Random rnd = new Random();
 
         public Form1()
         {
@@ -26,6 +28,10 @@ namespace CatchButton
 
             // 원래 버튼 크기 저장
             originalButtonSize = RunButton.Size;
+
+            // 폰트 정보 저장
+            originalButtonFont = RunButton.Font;
+            originalFontSize = originalButtonFont.Size;
         }
 
         // 버튼을 일정 비율만큼 줄임(예: 0.1 = 10%)
@@ -41,6 +47,10 @@ namespace CatchButton
             int newW = Math.Max(1, (int)Math.Round(originalButtonSize.Width * currentScale));
             int newH = Math.Max(1, (int)Math.Round(originalButtonSize.Height * currentScale));
             RunButton.Size = new Size(newW, newH);
+
+            // 폰트 크기도 비례 감소
+            float newSize = (float)(originalFontSize * currentScale);
+            RunButton.Font = new Font(originalButtonFont.FontFamily, newSize, originalButtonFont.Style);
         }
 
         // 점수 변경 및 최소 0점 고정, 폼 제목에 점수 표시
@@ -70,30 +80,38 @@ namespace CatchButton
             ChangeScore(-10);
             SystemSounds.Exclamation.Play(); // 놓쳤을 때
 
-            // 게임 오버 조건 검사
+            // 놓친 횟수 증가
+            missCount++;
+
+            // 게임 오버 체크
             if (missCount >= maxMisses)
             {
-                using (var dlg = new GameOverForm())
+                // MessageBox에 Retry(Ctrl+R) = 다시 시작, Cancel = 종료
+                var result = MessageBox.Show(
+                    "게임 오버! 다시 시작하시겠습니까?",
+                    "Game Over",
+                    MessageBoxButtons.RetryCancel,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1);
+
+                if (result == DialogResult.Retry)
                 {
-                    dlg.ShowDialog(this);
-                    if (dlg.RestartClicked)
+                    // 다시 시작
+                    ResetGame();
+                    return;
+                }
+                else
+                {
+                    // Cancel 눌렀으면 모든 버튼 비활성화
+                    foreach (Control c in this.Controls)
                     {
-                        // 다시 시작
-                        ResetGame();
-                        return;
+                        if (c is Button btn)
+                            btn.Enabled = false;
                     }
-                    else
-                    {
-                        // 확인: 모든 버튼 비활성화
-                        foreach (Control c in this.Controls)
-                        {
-                            if (c is Button btn)
-                                btn.Enabled = false;
-                        }
-                        return;
-                    }
+                    return;
                 }
             }
+
 
             // 1. 난수생성기준비
             Random rd = new Random();
@@ -116,6 +134,27 @@ namespace CatchButton
         private void RunButton_Click(object sender, EventArgs e)
         {
 
+        }
+
+        // 게임 초기화
+        private void ResetGame()
+        {
+            // 점수 및 상태 초기화
+            score = 1000;
+            currentScale = 1.0;
+            missCount = 0;
+            this.Text = $"점수: {score}";
+
+            // 모든 버튼 원래 크기로 복원
+            foreach (Control c in this.Controls)
+            {
+                if (c is Button btn)
+                {
+                    btn.Size = originalButtonSize;
+                    btn.Enabled = true; // 다시 활성화
+                    btn.Font = originalButtonFont; // 폰트 원래대로 복원
+                }
+            }
         }
     }
 }
