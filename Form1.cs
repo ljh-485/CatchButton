@@ -1,5 +1,6 @@
 using System.Media;
 using System.Drawing;
+using System.Windows.Forms;
 
 namespace CatchButton
 {
@@ -17,6 +18,7 @@ namespace CatchButton
         // 놓친 횟수
         private int missCount = 0;
         private const int maxMisses = 30;
+        Random rnd = new Random();
 
         public Form1()
         {
@@ -80,45 +82,43 @@ namespace CatchButton
             // 게임 오버 조건 검사
             if (missCount >= maxMisses)
             {
-                using (var dlg = new GameOverForm())
+                var result = MessageBox.Show(
+                    "게임 오버! 다시 시작하시겠습니까?",
+                    "Game Over",
+                    MessageBoxButtons.RetryCancel,
+                    MessageBoxIcon.Question,
+                    MessageBoxDefaultButton.Button1);
+
+                if (result == DialogResult.Retry)
                 {
-                    dlg.ShowDialog(this);
-                    if (dlg.RestartClicked)
+                    // 다시 시작
+                    ResetGame();
+                    return;
+                }
+                else
+                {
+                    // 확인(또는 취소): 모든 버튼 비활성화
+                    foreach (Control c in this.Controls)
                     {
-                        // 다시 시작
-                        ResetGame();
-                        return;
+                        if (c is Button btn)
+                            btn.Enabled = false;
                     }
-                    else
-                    {
-                        // 확인: 모든 버튼 비활성화
-                        foreach (Control c in this.Controls)
-                        {
-                            if (c is Button btn)
-                                btn.Enabled = false;
-                        }
-                        return;
-                    }
+                    return;
                 }
             }
 
-            // 1. 난수생성기준비
-            Random rd = new Random();
+            // 2. 가용영역계산(버튼이 폼 테두리에 걸리지 않게 보호)
+            int maxX = Math.Max(0, this.ClientSize.Width - RunButton.Size.Width);
+            int maxY = Math.Max(0, this.ClientSize.Height - RunButton.Size.Height);
 
-            // 2. 가용영역계산(버튼이폼테두리에걸리지않게보호)
-            // ClientSize는타이틀바와테두리를제외한실제흰도화지영역임
-            int maxX = this.ClientSize.Width; int maxY = this.ClientSize.Height;
+            // 3. 랜덤좌표추출(0 ~ 최대가용치 사이)
+            int nextX = rnd.Next(0, Math.Max(1, maxX + 1));
+            int nextY = rnd.Next(0, Math.Max(1, maxY + 1));
 
-            // 3. 랜덤좌표추출(0 ~ 최대가용치사이)
-            // 버튼의 좌표 기준이 좌상단에 있기 때문에 form밖으로 잘려나오는 경우 생김 그래서 버튼의 크기만큼 빼줌
-            int nextX = rd.Next(0, maxX - RunButton.Size.Width);
-            int nextY = rd.Next(0, maxY - RunButton.Size.Height);
-
-            // 4. 위치할당(새로운Point 객체생성)
+            // 4. 위치할당
             RunButton.Location = new Point(nextX, nextY);
 
-            // 5. 시각적피드백(폼제목표시줄에좌표출력)
-            // 점수와 버튼 위치를 함께 표시
+            // 5. 시각적 피드백(폼 제목 표시줄에 좌표 출력)
             this.Text = $"점수: {score}    버튼위치: ({nextX}, {nextY})";
         }
 
